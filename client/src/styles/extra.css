@@ -25,3 +25,9 @@ dialog.dialog:not([open]) { display: none; }
 .settings .key-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .settings .key-row .grow { flex: 1; }
 .settings code { font-family: var(--mono, ui-monospace, monospace); }
+
+/* Prototypes: the "New prototype" button is red. */
+.btn.primary.new-prototype,
+.btn.primary.new-prototype:disabled:hover,
+.btn.primary.new-prototype[aria-disabled=true]:hover { border-color: #dc2626; background: #dc2626; color: #fff; }
+.btn.primary.new-prototype kbd { border-color: rgb(255 255 255 / 0.4); color: #fff; }

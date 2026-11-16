@@ -74,7 +74,7 @@ export function Projects() {
         <h1>Prototypes</h1>
         <span className="toolbar-space" />
         <Btn icon={<FolderGit2 />} disabled={!may} why={WHY_NOT.create} onClick={() => setCloning(true)}>Clone</Btn>
-        <Btn variant="primary" icon={<Plus />} kbd="N" disabled={!may} why={WHY_NOT.create} onClick={() => go("/projects/new")}>New prototype</Btn>
+        <Btn variant="primary" className="new-prototype" icon={<Plus />} kbd="N" disabled={!may} why={WHY_NOT.create} onClick={() => go("/projects/new")}>New prototype</Btn>
       </div>
       {d.projects.length === 0 ? (
         <Empty title="No prototypes yet" action={<Btn variant="primary" icon={<Plus />} disabled={!may} why={WHY_NOT.create} onClick={() => go("/projects/new")}>Start from a brief</Btn>}>
