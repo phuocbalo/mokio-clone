@@ -11,6 +11,10 @@ https://phuocbalo.github.io/mokio-clone/ is deployed by [.github/workflows/pages
 
 The server only accepts the hosted site's origin. To allow another one, set `MOKIO_ALLOWED_ORIGINS` (comma-separated).
 
+## Working on the code
+
+New to the project? [CONTRIBUTING.md](CONTRIBUTING.md) walks through cloning, running, pulling updates and sending changes.
+
 ## Run it
 
 You need Node 22 or later, and [Claude Code](https://claude.com/claude-code) installed and signed in (`claude`, then sign in).
