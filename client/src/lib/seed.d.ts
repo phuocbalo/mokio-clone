@@ -1,0 +1,10 @@
+import type { Data, DesignSystem, Project, Repo, Spec, Change, Commit, Entry, Screen } from "./types";
+export const Vi: { id: string; name: string; about: string; build: () => Data }[];
+export function wi(): DesignSystem[];
+export function Pi(p: Project): Repo;
+export function Fi(p: Project): Spec;
+export function M(msg: string, by: string, when: string, changes?: Change[], pushed?: boolean, merge?: boolean): Commit;
+export function Ai(s: Pick<Screen, "id" | "name">, what: string, from?: unknown, to?: unknown): Change;
+export function Ni(e: Entry, what: string, prev?: Entry | null): Change;
+export function Mi(kind: string): string;
+export function ki(name: string): string;
