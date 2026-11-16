@@ -4,7 +4,12 @@ Design app prototypes with Claude. A team drafts screens from a brief, reviews t
 
 ## Hosted demo
 
-https://phuocbalo.github.io/mokio-clone/ is deployed by [.github/workflows/pages.yml](.github/workflows/pages.yml) on every push to `main`. GitHub Pages only serves static files, so the site runs in **demo mode**: sign in with one of the demo accounts below (password `mokio-demo`), everything is kept in your browser, and AI is off. The app switches to demo mode by itself whenever no Mokio server answers.
+https://phuocbalo.github.io/mokio-clone/ is deployed by [.github/workflows/pages.yml](.github/workflows/pages.yml) on every push to `main`. GitHub Pages only serves static files, so the site looks for a Mokio server on the visitor's own computer at `http://localhost:8787`:
+
+- **Server running** (`npm run dev` in a clone, with Claude Code signed in): the hosted site uses it for sign-in and AI. Reload the page after starting the server. Chrome may ask to allow access to devices on your local network; allow it. Safari blocks this; use Chrome, Edge or Firefox.
+- **No server**: the site runs in **demo mode**. Sign in with one of the demo accounts below (password `mokio-demo`), everything is kept in your browser, and AI is off.
+
+The server only accepts the hosted site's origin. To allow another one, set `MOKIO_ALLOWED_ORIGINS` (comma-separated).
 
 ## Run it
 
