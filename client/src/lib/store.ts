@@ -57,7 +57,8 @@ export function togglePin(projectId: string, screenId: string) {
 }
 
 // ---- Account ---------------------------------------------------------------
-export const account = store<{ user: Person | null; team: Person[]; ready: boolean }>({ user: null, team: [], ready: false });
+/** `demo` is true when no Mokio server answers (a static host): demo accounts live in the browser and AI is off. */
+export const account = store<{ user: Person | null; team: Person[]; ready: boolean; demo: boolean }>({ user: null, team: [], ready: false, demo: false });
 export const useAccount = () => useStore(account);
 /** The role permissions are checked against. Owners can preview another role from the bar. */
 export function effectiveRole(): Role | undefined {

@@ -2,6 +2,10 @@
 
 Design app prototypes with Claude. A team drafts screens from a brief, reviews them by pinning comments to elements, compares layout options, keeps a spec, plans large changes from one brief, and works with git-style branches and pull requests. Every AI step runs through **Claude Code on your computer**.
 
+## Hosted demo
+
+https://phuocbalo.github.io/mokio-clone/ is deployed by [.github/workflows/pages.yml](.github/workflows/pages.yml) on every push to `main`. GitHub Pages only serves static files, so the site runs in **demo mode**: sign in with one of the demo accounts below (password `mokio-demo`), everything is kept in your browser, and AI is off. The app switches to demo mode by itself whenever no Mokio server answers.
+
 ## Run it
 
 You need Node 22 or later, and [Claude Code](https://claude.com/claude-code) installed and signed in (`claude`, then sign in).

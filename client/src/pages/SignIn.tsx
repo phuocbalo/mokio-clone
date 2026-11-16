@@ -6,7 +6,7 @@ import { Avatar, Btn, Glyph, Kbd, useKeys } from "../components/ui";
 
 /** Real sign-in. The team list mirrors the original's "Who are you today?" and fills the email. */
 export function SignIn() {
-  const { team } = useAccount();
+  const { team, demo } = useAccount();
   const [mode, setMode] = useState<"in" | "up">("in");
   const [name, setName] = useState(""), [email, setEmail] = useState(""), [password, setPassword] = useState("");
   const [err, setErr] = useState(""), [busy, setBusy] = useState(false);
@@ -49,12 +49,14 @@ export function SignIn() {
           {err && <p className="err" role="alert">{err}</p>}
           <div className="form-actions">
             <Btn type="submit" variant="primary" busy={busy} disabled={!email || !password}>{mode === "in" ? "Sign in" : "Create account"}</Btn>
-            <button type="button" className="link" onClick={() => { setMode(mode === "in" ? "up" : "in"); setErr(""); }}>
+            {!demo && <button type="button" className="link" onClick={() => { setMode(mode === "in" ? "up" : "in"); setErr(""); }}>
               {mode === "in" ? "New here? Create an account" : "I already have an account"}
-            </button>
+            </button>}
           </div>
         </form>
-        <p className="fine">Accounts are stored on this computer by the Mokio server. Prototype data is kept in this browser only.</p>
+        <p className="fine">{demo
+          ? <>Hosted demo: pick an account and use the password <code>mokio-demo</code>. Everything is kept in this browser, and AI is off. Run Mokio on your computer with Claude Code to use AI and real accounts.</>
+          : "Accounts are stored on this computer by the Mokio server. Prototype data is kept in this browser only."}</p>
       </div>
     </div>
   );
