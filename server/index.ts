@@ -13,21 +13,49 @@ import { can } from "../client/src/lib/catalog.ts";
 seedDemoTeam();
 
 const app = express();
+
+// The hosted site (GitHub Pages) may call this server on the visitor's own computer.
+// Only these origins may; add more with MOKIO_ALLOWED_ORIGINS (comma-separated).
+const ALLOWED = new Set(
+  (process.env.MOKIO_ALLOWED_ORIGINS ?? "https://phuocbalo.github.io").split(",").map((s) => s.trim()).filter(Boolean),
+);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED.has(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Headers", "content-type, authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, OPTIONS");
+    // Chrome asks before a public site reaches a server on this computer.
+    if (req.headers["access-control-request-private-network"]) res.setHeader("Access-Control-Allow-Private-Network", "true");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(origin && ALLOWED.has(origin) ? 204 : 403);
+  next();
+});
 app.use(express.json({ limit: "2mb" }));
 app.use(cookieParser());
 
 const COOKIE = "mokio_session";
 type Authed = Request & { user: User };
 
+/** A session comes from the cookie (same site) or a bearer token (the hosted site). */
+function tokenOf(req: Request): string | undefined {
+  const h = req.headers.authorization;
+  if (h?.startsWith("Bearer ")) return h.slice(7);
+  return req.cookies?.[COOKIE];
+}
+
 function auth(req: Request, res: Response, next: NextFunction) {
-  const user = sessionUser(req.cookies?.[COOKIE]);
+  const user = sessionUser(tokenOf(req));
   if (!user) return res.status(401).json({ error: "Sign in first." });
   (req as Authed).user = user;
   next();
 }
 
 function startSession(res: Response, userId: string) {
-  res.cookie(COOKIE, createSession(userId), { httpOnly: true, sameSite: "lax", maxAge: 7 * 24 * 3600 * 1000 });
+  const token = createSession(userId);
+  res.cookie(COOKIE, token, { httpOnly: true, sameSite: "lax", maxAge: 7 * 24 * 3600 * 1000 });
+  return token;
 }
 
 // ---- Accounts ------------------------------------------------------------
@@ -37,8 +65,8 @@ app.post("/api/auth/login", (req, res) => {
   if (!row || !checkPassword(row.password_hash, String(password ?? ""))) {
     return res.status(401).json({ error: "That email and password do not match an account." });
   }
-  startSession(res, row.id);
-  res.json({ user: getUser(row.id) });
+  const token = startSession(res, row.id);
+  res.json({ user: getUser(row.id), token });
 });
 
 app.post("/api/auth/register", (req, res) => {
@@ -48,19 +76,19 @@ app.post("/api/auth/register", (req, res) => {
   if (findUserByEmail(email)) return res.status(409).json({ error: "An account with that email already exists." });
   // New people start as developers (read and comment). An owner can change the role.
   const user = createUser(name, email, password, listUsers().length ? "developer" : "owner");
-  startSession(res, user.id);
-  res.json({ user });
+  const token = startSession(res, user.id);
+  res.json({ user, token });
 });
 
 app.post("/api/auth/logout", (req, res) => {
-  const t = req.cookies?.[COOKIE];
+  const t = tokenOf(req);
   if (t) dropSession(t);
   res.clearCookie(COOKIE);
   res.json({ ok: true });
 });
 
 app.get("/api/auth/me", (req, res) => {
-  res.json({ user: sessionUser(req.cookies?.[COOKIE]) });
+  res.json({ user: sessionUser(tokenOf(req)) });
 });
 
 // Public: the sign-in screen lists the team, like the original's "Who are you today?".

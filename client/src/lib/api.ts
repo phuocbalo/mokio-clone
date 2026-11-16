@@ -26,12 +26,22 @@ const isDemo = () => account.get().demo;
 
 class NoServer extends Error {}
 
+// Where the API lives: the page's own origin, or, from the hosted site, a Mokio server
+// running on the visitor's computer. Cross-origin calls carry a bearer token, not a cookie.
+const LOCAL_SERVER = "http://localhost:8787";
+let base = "";
+const tokenKey = () => `mokio.token.v1.${base || "same"}`;
+const token = () => (base ? readLocal<string>(tokenKey()) : null);
+
 async function call<T>(method: string, url: string, body?: unknown): Promise<T> {
   let r: Response;
   try {
-    r = await fetch(url, {
-      method, credentials: "same-origin",
-      headers: body ? { "content-type": "application/json" } : undefined,
+    const headers: Record<string, string> = {};
+    if (body) headers["content-type"] = "application/json";
+    const t = token();
+    if (t) headers.authorization = `Bearer ${t}`;
+    r = await fetch(base + url, {
+      method, credentials: base ? "omit" : "same-origin", headers,
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -50,12 +60,24 @@ export async function loadTeam() {
   account.set({ ...account.get(), team: users });
 }
 
+async function connect() {
+  await loadTeam();
+  const { user } = await call<{ user: Person | null }>("GET", "/api/auth/me");
+  account.set({ ...account.get(), user, ready: true });
+  if (user) { reloadData(); void checkClaude(); }
+}
+
 export async function boot() {
   try {
-    await loadTeam();
-    const { user } = await call<{ user: Person | null }>("GET", "/api/auth/me");
-    account.set({ ...account.get(), user, ready: true });
-    if (user) { reloadData(); void checkClaude(); }
+    try {
+      await connect();
+    } catch (e) {
+      // No server behind this page (a static host). Look for one on this computer.
+      const onLocalhost = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+      if (!(e instanceof NoServer) || onLocalhost) throw e;
+      base = LOCAL_SERVER;
+      try { await connect(); } catch (x) { base = ""; throw x; }
+    }
   } catch (e) {
     if (e instanceof NoServer) {
       const id = readLocal<string>(DEMO_USER_KEY);
@@ -85,17 +107,19 @@ export async function login(email: string, password: string) {
     writeLocal(DEMO_USER_KEY, user.id);
     return signedIn(user);
   }
-  const { user } = await call<{ user: Person }>("POST", "/api/auth/login", { email, password });
+  const { user, token: t } = await call<{ user: Person; token: string }>("POST", "/api/auth/login", { email, password });
+  if (base) writeLocal(tokenKey(), t);
   await signedIn(user);
 }
 export async function register(name: string, email: string, password: string) {
   if (isDemo()) throw new Error("This hosted demo has only the four demo accounts. Run Mokio on your computer to create accounts.");
-  const { user } = await call<{ user: Person }>("POST", "/api/auth/register", { name, email, password });
+  const { user, token: t } = await call<{ user: Person; token: string }>("POST", "/api/auth/register", { name, email, password });
+  if (base) writeLocal(tokenKey(), t);
   await signedIn(user);
 }
 export async function logout() {
   if (isDemo()) writeLocal(DEMO_USER_KEY, null);
-  else await call("POST", "/api/auth/logout").catch(() => {});
+  else { await call("POST", "/api/auth/logout").catch(() => {}); if (base) writeLocal(tokenKey(), null); }
   account.set({ ...account.get(), user: null });
   go("/signin");
 }
@@ -113,7 +137,7 @@ export async function changeRole(id: string, role: string) {
 
 export async function checkClaude() {
   if (isDemo()) {
-    ai.set({ checked: true, installed: false, loggedIn: false, on: false, why: "AI is off in this hosted demo: Claude runs only when Mokio runs on your computer with Claude Code." });
+    ai.set({ checked: true, installed: false, loggedIn: false, on: false, why: "AI is off: no Mokio server on this computer. Run npm run dev in the Mokio folder, then reload this page." });
     return false;
   }
   try {

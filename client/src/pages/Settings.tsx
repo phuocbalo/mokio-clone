@@ -26,7 +26,7 @@ export function Settings() {
         <h2><Sparkles /> AI <Chip tone={s.on ? "ok" : "warn"}>{s.on ? "On" : "Off"}</Chip></h2>
         <p className="lede">Mokio runs Claude Code on this computer. Drafting, review rounds, options, briefs, spec changes and pull request reviews all go through it.</p>
         {demo ? (
-          <p className="notice">This is the hosted demo, with no Mokio server behind it, so AI is off. To use AI, clone the repository, run <code>npm install</code> and <code>npm run dev</code> on a computer with Claude Code signed in.</p>
+          <p className="notice">No Mokio server was found on this computer, so AI is off. To turn it on, clone the repository, run <code>npm install</code> and <code>npm run dev</code> on a computer with Claude Code signed in, then reload this page. This site then uses that server for sign-in and AI. Your browser may ask to allow access to devices on your local network: allow it.</p>
         ) : <>
         <ul className="steps">
           <Check ok={s.installed}>{s.installed ? <>Claude Code is installed {s.version && <span className="mono muted">{s.version}</span>}</> : <>Install Claude Code from <a className="link" href="https://claude.com/claude-code" target="_blank" rel="noreferrer">claude.com/claude-code</a>, then check again.</>}</Check>
